@@ -8,15 +8,16 @@ module registerFile(
     output [63:0] readData2 // read data 2
 );
 
-    reg [31:0] registers [63:0]; // register file
+    reg [63:0] registers [31:0]; // register file
   
   always @ (*)
     begin 
-      if(writeReg)
+      if(regWrite)
         registers[writeReg] = writeData; //writing to register file
-      
+      else begin
       readData1 = file[readReg1]; // reading data 1
       readData2 = file[readReg2]; // reading data 2
+      end
     end
 
 endmodule

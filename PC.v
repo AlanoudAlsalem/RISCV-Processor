@@ -1,6 +1,7 @@
+// The program counter provides the instruction address (readAddress), to the instruction memory.
 module PC (
     input address,
-    output reg readAddress,
+    output reg readAddress
 );
 
     always @ (address)

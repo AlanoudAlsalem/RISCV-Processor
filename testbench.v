@@ -1,21 +1,26 @@
-`include "mux2_1.v"
+/* `include "PC.v"
 `include "instructionMemory.v"
-`include "PC.v"
-`include "immGen.v"
+`include "registerFile.v"
+`include "controlUnit.v"
+`include "mux2_1.v"
+`include "immGen.v" */
+`include "CPU.v"
+//`include "adder.v"
+// `include "ALU.v"
 
 module testbench;
-    reg [31:0] in_t;
-    wire [63:0] out_t;
+    reg [31:0] address;
+    wire [31:0] instruction;
 
-    immGen m1(in_t, out_t);
+    CPU cpu1(
+        .address(address), 
+        .instruction(instruction));
 
     initial begin 
-        $display ("Immediate generator:");
-        in_t = 32'd567;
-        #1 $display("%b -> %b", in_t, out_t);
-        in_t = -32'b01;
-        #1 $display("%b -> %b", in_t, out_t);
-
+        address = 0; 
+        #1 $display ("Address = %d | Instruction = %h", address, instruction);
+        address = 4; 
+        #1 $display ("Address = %d | Instruction = %h", address, instruction);
     end
 
 endmodule

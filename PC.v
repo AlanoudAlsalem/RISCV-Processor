@@ -1,10 +1,10 @@
 // The program counter provides the instruction address (readAddress), to the instruction memory.
 module PC (
-    input address,
-    output reg readAddress
+    input [31:0] nextAddress,
+    output reg [31:0] readAddress
 );
 
-    always @ (address)
-        readAddress = address;
+    always @ (nextAddress)
+        readAddress = nextAddress;
 
 endmodule

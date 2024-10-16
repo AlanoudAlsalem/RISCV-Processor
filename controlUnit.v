@@ -1,45 +1,73 @@
-// The interconnection of all components to form the CPU
+module controlUnit
+// categorizes the instrucion types and ALU operations
+# ( parameter  
+        // R-types
+        Rtype   = 7'b0110011,   // opcode
+        addf3   = 3'b000,   addf7   = 7'b0000000,  
+        subf3   = 3'b000,   subf7   = 7'b0100000,
+        orf3    = 3'b110,   orf7    = 7'b0000000,
+        andf3   = 3'b111,   andf7   = 7'b0000000,
+        // I-types
+        Itype   = 7'b0010011,   // opcode
+        addif3  = 3'b000, 
+        orif3   = 3'b110,
+        andif3  = 3'b111,
+        // stores and loads
+        sw      = 7'b0100011,   // opcode
+        swf3    = 3'b010,
+        lw      = 7'b0000011,
+        lwf3    = 3'b010,
+        //ALU operations
+        addop   = 3'b000,
+        subop   = 3'b001,
+        andop   = 3'b010,
+        orop    = 3'b011 )
 
-module controlUnit(
-    input [31:0] instruction,
+(   input [6:0] opCode, // 7-bit opCode
+    input [2:0] funct3, // 3-bit funct3
+    input [6:0] funct7, // 7-bit funct7
     output reg regWrite, // register file write signal
     output reg memWrite, // memory write signal = (memory read)'
-    output reg [3:0] operation // ALU operation
+    output reg [2:0] ALUop // ALU operation
 );
-    // extracts the opCode from the instruction
-    wire [6:0] opCode = instruction[6:0];
-    wire [3:0] funct3;
-    wire [6:0] funct7;
-
-    // categorizes the instruction types
-    parameter
-        Rtype = 6'b0110011,
-        Itype1 = 6'0010011,
-        Itype2 = 6'0000011;
-
-    always @ (instruction) begin
+        
+    always @ (*) begin
         case(opCode)
-            Rtype: funct3 = instruction[14:12], funct7 = instruction[25,31];
-            Itype1: funct3 = instruction[14:12];
-            Itype2: funct3 = instruction[14:12];
+            Rtype: begin
+                regWrite    <= 1; // enables writeback on register file
+                memWrite    <= 0; // disables writing on memory
+            
+                // assigns the ALUop signal
+                case({funct3, funct7})
+                    {addf3, addf7}  : ALUop <= addop;
+                    {subf3, subf7}  : ALUop <= subop;
+                    {orf3, orf7}    : ALUop <= orop;
+                    {andf3, andf7}  : ALUop <= andop;
+                endcase // R-type {funct3, funct7}
+            end
+            Itype: begin
+                regWrite    <= 1; // enables writeback on register file
+                memWrite    <= 0; // disables writing on memory
+
+                // assigns the ALUop signal
+                case(funct3)
+                    addif3  : ALUop <= addop;
+                    orif3   : ALUop <= orop;
+                    andif3  : ALUop <= andop;
+                endcase // I-type funct3
+            end
+            sw: begin
+                regWrite    <= 0; // disables writeback on register file
+                memWrite    <= 1; // enables writing on memory
+            end
+            lw: begin
+                regWrite    <= 1; // enables writeback on register file
+                memWrite    <= 0; // disables writing on memory
+            end
+            default: begin
+                regWrite    <= 0; // disables writeback on register file
+                memWrite    <= 0; // disables writing on memory
+            end
         endcase
     end 
-
-    decodeOpration x1(.funct3(), .funct7(), .operation(operation));
-endmodule // control unit
-
-decodeOpration(
-    input [2:0] funct3, 
-    input [6:0] funct7, 
-    output reg [3:0] operation
-);
-
-    parameter
-        add = 4'b0000,
-        sub = 4'b0001;
-
-always @ (*)
-    case({funct3, funct7})
-
-
-endmodule
+endmodule 

@@ -9,7 +9,5 @@ module adder(
     assign sum = operand1 + operand2;
 
 endmodule
-//malak
-//malaka
 
 

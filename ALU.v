@@ -54,7 +54,6 @@ module ALU(
                 zeroFlag = 1; 
             end
         endcase
-        operation = sub ? (result == 0 ? zeroFlag = 1 : zeroFlag = 0) : zeroFlag = 0;
     end
 endmodule
 

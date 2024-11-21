@@ -2,9 +2,9 @@
 // Assume that the instruction memory has 1024 memory locations
 module instructionMemory(
     input [31:0] instructionAddress, //32 bit address for 1024 memory locations
-    output [31:0] instruction // 32-bit instructions
+    output [63:0] instruction // 32-bit instructions
 );
-    reg [3:0] memory [1023:0]; // 1024 memory locations with 4 bits in each location
+    reg [3:0] memory [65536:0]; // 65536 memory locations with 4 bits in each location
     
     // initializing some instruction in the instruction memory
     initial begin 

@@ -1,10 +1,10 @@
 // The 64-bit ALU performs computations based on the input operation
 
 module ALU(
-    input [3:0] operation, // 4-bit operation
-    input [63:0] operand1, // 64-bit operand
-    input [63:0] operand2, //64-bit operand
-    output reg [63:0] result, // 64-bit result
+    input [6:0] operation, // 4-bit operation
+    input [31:0] operand1, // 64-bit operand
+    input [31:0] operand2, //64-bit operand
+    output reg [31:0] result, // 64-bit result
     output reg zeroFlag // used for branch instructions
 );
 

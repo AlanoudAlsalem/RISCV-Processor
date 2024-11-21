@@ -1,8 +1,8 @@
 // The instruction memory receives the address from the PC and outputs the instruction in that address location
 // Assume that the instruction memory has 1024 memory locations
 module instructionMemory(
-    input [31:0] instructionAddress, //32 bit address for 1024 memory locations
-    output [63:0] instruction // 32-bit instructions
+    input [15:0] instructionAddress, //16 bit address for 64K memory locations
+    output [31:0] instruction // 32-bit instructions
 );
     reg [3:0] memory [65536:0]; // 65536 memory locations with 4 bits in each location
     

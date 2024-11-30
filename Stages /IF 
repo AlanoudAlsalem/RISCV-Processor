@@ -1,0 +1,12 @@
+module IF(PCin, PCout, fetchedInst, reset, jumpReg);
+input reset,  PCin;
+input [31:0] jumpReg;
+output reg [31:0] PCout, fetchedInst;
+wire [31:0] adderToMux, muxToPC, pcToIM;
+
+mux m1(adderToMux, jumpReg, PCin, muxToPC);//part of the mux module
+PCReg p1(reset, 1, muxToPC, pcToIM);//to store current value of PC, 1 is the enable signal 
+instMem m1(pcToIM, fetchedInst);//where instruction will be fetched from 
+increment i1(pcToIM, 4, adderToMux);//inc pc by 4
+
+endmodule

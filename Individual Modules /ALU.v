@@ -24,7 +24,7 @@ parameter add = 3'b000,
                     zeroFlag = 0;
             end
             sub: begin
-                result = operand1 - operand2;
+                result = operand1 - operand2; //should give twos comp
                 if(result == 0)
                 zeroFlag = 1;
             end

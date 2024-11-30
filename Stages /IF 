@@ -1,12 +1,46 @@
-module IF(PCin, PCout, fetchedInst, reset, jumpReg);
-input reset,  PCin;
-input [31:0] jumpReg;
-output reg [31:0] PCout, fetchedInst;
-wire [31:0] adderToMux, muxToPC, pcToIM;
+module IFU(
+    input reset,
+    output [31:0] Instruction_Code
+);
+reg [31:0] PC = 32'b0;  // 32-bit program counter is initialized to zero
 
-mux m1(adderToMux, jumpReg, PCin, muxToPC);//part of the mux module
-PCReg p1(reset, 1, muxToPC, pcToIM);//to store current value of PC, 1 is the enable signal 
-instMem m1(pcToIM, fetchedInst);//where instruction will be fetched from 
-increment i1(pcToIM, 4, adderToMux);//inc pc by 4
+    // Initializing the instruction memory block
+    INST_MEM instr_mem(PC,reset,Instruction_Code);//Include instruction memory module
 
+    always @(*)
+    begin
+        if(reset == 1)  //If reset is one, clear the program counter
+        PC <= 0;
+        else
+        PC <= PC+4;   // Increment program counter on positive clock edge
+    end
+
+endmodule
+
+
+
+module stimulus(
+
+);
+    reg reset;
+    wire [31:0] Instruction_Code;
+
+    // Initializing IFU module
+    IFU IFU_module(.reset(reset),.Instruction_Code(Instruction_Code));
+
+    //Initial inputs
+    reset = 0;
+
+    // Apply reset
+    initial
+    begin
+        #20 
+        reset = 1'b1;
+        #20
+        reset = 1'b0;
+    end
+
+    #20 
+    $finish;
+    //display code
 endmodule

@@ -29,9 +29,9 @@ module immGen
             andiOp:     out <= {{20{instruction[31]}}, instruction[31:20]};
             jalrOp:     out <= {{20{instruction[31]}}, instruction[31:20]};
             lwOp:       out <= {{20{instruction[31]}}, instruction[31:20]}; // same for lw and lh
-            beqOp:      out <= {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // same for beq and bne
-            jalOp:      out <= {{12{instruction[31]}}, instruction[31:12]};
-            luiOp:      out <= {12'b0, instruction[31:12]};
+            beqOp:      out <= {{19{instruction[31]}}, instruction[31:25], instruction[11:7], 1'b0}; // same for beq and bne
+            jalOp:      out <= {{12{instruction[31]}}, instruction[31:12], 1'b0};
+            luiOp:      out <= {instruction[31:12], 12'b0};
             swOp:       out <= {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // same for sw and and sb
         endcase 
     end

@@ -15,10 +15,10 @@ module dataMemory(
         memory[2]   <= 8'h0;
         memory[3]   <= 8'h0;
 
-        memory[4]   <= 8'h2;
-        memory[5]   <= 8'h0;
-        memory[6]   <= 8'h0;
-        memory[7]   <= 8'h0;
+        memory[4]   <= 8'h02;
+        memory[5]   <= 8'hf0;
+        memory[6]   <= 8'h00;
+        memory[7]   <= 8'hf0;
 
         memory[8]   <= 8'h3;
         memory[9]   <= 8'h0;

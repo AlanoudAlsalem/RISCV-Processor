@@ -22,11 +22,24 @@ module instructionMemory(
         memory[9]   <= 8'h11;
         memory[10]  <= 8'h11;
         memory[11]  <= 8'h40;
-
+        
+        // halt
         memory[12]  <= 8'h0;
         memory[13]  <= 8'h0;
         memory[14]  <= 8'h0;
         memory[15]  <= 8'h0;
+
+        // lh 0000 0000 0100 0000 0010 0010 0000 0011
+        memory[16]  <= 8'h03;
+        memory[17]  <= 8'h22;
+        memory[18]  <= 8'h40;
+        memory[19]  <= 8'h00;
+
+        // lui x5 FF 00 32 B8
+        memory[20]  <= 8'hB8;
+        memory[21]  <= 8'h32;
+        memory[22]  <= 8'h00;
+        memory[23]  <= 8'hFF;
     end
 
     // outputs the instruction from memory (in little endian order)

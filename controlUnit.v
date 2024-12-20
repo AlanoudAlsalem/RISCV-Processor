@@ -57,6 +57,7 @@ module controlUnit
     output reg [1:0] ALUsrc, // ALU operand 2 MUX selection signal (0 = Rs2, 1 = imm, 2 = PC)
     output reg [3:0] ALUop,  // ALU operation
     output reg sb,           // sb instruction
+    output reg lh,           // lh instruction
     output reg halt          // halts the CPU operation 
 );
         
@@ -69,6 +70,7 @@ module controlUnit
         ALUsrc      <= 2'b0; 
         ALUop       <= 4'b0;
         sb          <= 1'b0;
+        lh          <= 1'b0;
         halt        <= 1'b0;
 
         if(opCode == Rtype) begin
@@ -122,14 +124,7 @@ module controlUnit
             branch      <= 2'b0; 
             ALUop       <= addop;
             ALUsrc      <= 2'b1; 
-        end
-        else if(opCode == lwOp) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b0; 
-            memWrite    <= 1'b0; 
-            branch      <= 2'b0; 
-            ALUop       <= addop;
-            ALUsrc      <= 2'b1; 
+            lh          <= (funct3 == lhf3) ? 1 : 0;
         end
         else if(opCode == oriOp) begin
             regWrite    <= 1'b1; 
@@ -156,7 +151,7 @@ module controlUnit
         end
         else if(opCode == luiOp) begin
             regWrite    <= 1'b1; 
-            memtoReg    <= 1'b0; 
+            memtoReg    <= 1'b1; 
             memWrite    <= 1'b0; 
             branch      <= 2'b0; 
             ALUop       <= luiop;

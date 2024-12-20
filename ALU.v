@@ -34,7 +34,7 @@ module ALU
             xorop:  result <= operand1 ^ operand2;
             sltop:  result <= (operand1 < operand2) ? 1 : 0;
             jalop:  result <= operand2 + 4;
-            luiop:  result <= {operand2[19:0], 12'b0};
+            luiop:  result <= operand2;
         endcase
         zeroFlag <= (operand1 == operand2) ? 1 : 0;
     end

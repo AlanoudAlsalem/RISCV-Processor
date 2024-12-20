@@ -1,44 +1,38 @@
-// The immediate generator sign extends the 32-bit input to a 64-bit output
+// The immediate generator sign extends the input to 32 bits
+module immGen
+# (parameter
+    // opCodes 
+    // I-types        
+    addiwOp     = 7'h13,
+    andiOp      = 7'h1B,
+    jalrOp      = 7'h67,
+    lhOp        = 7'h03,
+    lwOp        = 7'h03,
+    oriOp       = 7'h13,
+               
+    beqOp       = 7'h63,
+    bneOp       = 7'h63,
+    jalOp       = 7'h6F,
+    luiOp       = 7'h38,
+    sbOp        = 7'h23,
+    swOp        = 7'h23
+)
 
-//dont we have to deal with every instruction type differently????
-module immGen(
-    input [31:0] in,
-    output reg [63:0] out
+(   input [31:0] instruction,
+    output reg [31:0] out
 );
 
-    always @ (in)
-    out = in[31] ? {32'hFFFFFFFF, in} : {32'h00000000, in};
-
-endmodule
-
-module stimulus();
-    reg [31:0] in;
-    wire [63:0] out;
-
-    immGen gen(.in(in), .out(out));
-
-    initial begin
-        // Test case 1: I-Type (ADDI)
-        in = 32'b00010000000000010000000010010011;
-        #1;
-        $display("Test case 1: Instruction = %b, Immediate = %b", in, out);
-        
-        in = 32'b00000001111000001000000010100011; 
-        #1;
-        $display("Test case 3: Instruction = %b, Immediate = %b", in, out);
-
-        in = 32'b00000001111100001000000000111000; 
-        #1;
-        $display("Test case 4: Instruction = %b, Immediate = %b", in, out);
-
-        in = 32'b00000010000000000000000001100011; 
-        #1;
-        $display("Test case 5: Instruction = %b, Immediate = %b", in, out);
-        
-        in = 32'b00000010000000000000000001101111; 
-        #1;
-        $display("Test case 5: Instruction = %b, Immediate = %b", in, out);
-        
-        $finish; // End simulation
+    always @ (*) begin
+        case (instruction[6:0])
+            // I-types
+            addiwOp:    out <= {{20{instruction[31]}}, instruction[31:20]}; // same for addiw and ori
+            andiOp:     out <= {{20{instruction[31]}}, instruction[31:20]};
+            jalrOp:     out <= {{20{instruction[31]}}, instruction[31:20]};
+            lwOp:       out <= {{20{instruction[31]}}, instruction[31:20]}; // same for lw and lh
+            beqOp:      out <= {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // same for beq and bne
+            jalOp:      out <= {{12{instruction[31]}}, instruction[31:12]};
+            luiOp:      out <= {12'b0, instruction[31:12]};
+            swOp:       out <= {{20{instruction[31]}}, instruction[31:25], instruction[11:7]}; // same for sw and and sb
+        endcase 
     end
 endmodule

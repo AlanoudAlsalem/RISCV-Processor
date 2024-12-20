@@ -1,12 +1,4 @@
-/* `include "PC.v"
-`include "instructionMemory.v"
-`include "registerFile.v"
-`include "controlUnit.v"
-`include "mux2_1.v"
-`include "immGen.v" */
 `include "CPU.v"
-//`include "adder.v"
-// `include "ALU.v"
 
 module testbench;
     reg [31:0] address;

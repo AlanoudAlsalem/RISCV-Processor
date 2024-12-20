@@ -1,32 +1,32 @@
 // The instruction memory receives the address from the PC and outputs the instruction in that address location
-// Assume that the instruction memory has 1024 memory locations
 module instructionMemory(
-    input [31:0] instructionAddress, //32 bit address for 1024 memory locations
-    output [63:0] instruction // 32-bit instructions
+    input [31:0] instructionAddress, // 32 bit address
+    output [31:0] instruction // 32-bit instructions
 );
-    reg [3:0] memory [65536:0]; // 65536 memory locations with 4 bits in each location
+    reg [7:0] memory [65535:0]; // 64K memory locations with 8 bits in each location
     
     // initializing some instruction in the instruction memory
     initial begin 
-        memory[0] = 4'hF;
-        memory[1] = 4'hB;
-        memory[2] = 4'h0;
-        memory[3] = 4'hA;
-        
-        memory[4] = 4'hF;
-        memory[5] = 4'h1;
-        memory[6] = 4'h0;
-        memory[7] = 4'hC;
+        // addi x1, x0, 1 : 0000 0000 0001 0000 0000 0000 1001 0011
+        memory[0]   <= 8'h93;
+        memory[1]   <= 8'h00;
+        memory[2]   <= 8'h10;
+        memory[3]   <= 8'h00;
+        // addi x2, x0, 2 : 0000 0000 0002 0000 0000 0001 0001 0011
+        memory[4]   <= 8'h13;
+        memory[5]   <= 8'h01;
+        memory[6]   <= 8'h20;
+        memory[7]   <= 8'h00;
+        // add x3, x1, x2 : 0100 0000 0001 0001 0001 0001 1011 0011
+        memory[8]   <= 8'hB3;
+        memory[9]   <= 8'h11;
+        memory[10]  <= 8'h11;
+        memory[11]  <= 8'h40;
 
-        memory[8] = 4'hE;
-        memory[9] = 4'h0;
-        memory[10] = 4'h1;
-        memory[11] = 4'hD;
-
-        memory[12] = 4'hA;
-        memory[13] = 4'h1;
-        memory[14] = 4'h0;
-        memory[15] = 4'h5;
+        memory[12]  <= 8'h0;
+        memory[13]  <= 8'h0;
+        memory[14]  <= 8'h0;
+        memory[15]  <= 8'h0;
     end
 
     // outputs the instruction from memory (in little endian order)

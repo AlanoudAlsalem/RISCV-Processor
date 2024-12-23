@@ -32,7 +32,7 @@ module ALU
             sllop:  result <= operand1 << operand2;
             srlop:  result <= operand1 >> operand2;
             xorop:  result <= operand1 ^ operand2;
-            sltop:  result <= (operand1 < operand2) ? 1 : 0;
+            sltop:  result <= ($signed(operand1) < $signed(operand2)) ? 1 : 0;
             jalop:  result <= operand2 + 4;
             luiop:  result <= operand2;
         endcase

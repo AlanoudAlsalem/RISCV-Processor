@@ -36,10 +36,10 @@ module dataMemory(
             if(sb)
                 memory[dataAddress] <= writeData[7:0];
             else begin // stores the data in little endian format
-                memory[dataAddress] <= writeData[7:0];
-                memory[dataAddress] <= writeData[15:8];
-                memory[dataAddress] <= writeData[23:16];
-                memory[dataAddress] <= writeData[31:24];
+                memory[dataAddress]     <= writeData[7:0];
+                memory[dataAddress + 1] <= writeData[15:8];
+                memory[dataAddress + 2] <= writeData[23:16];
+                memory[dataAddress + 3] <= writeData[31:24];
             end
         end
         else    

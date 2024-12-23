@@ -269,7 +269,7 @@ module microTestbench;
 
     initial begin
         clk = 0; reset = 0; #1 reset = 1; #4 reset = 0;
-        repeat (19) begin
+        repeat (32) begin
             #5 clk = ~clk;
         end
     end
@@ -283,7 +283,7 @@ module microTestbench;
         $display("regWrite = %b, memtoReg = %b, memWrite = %b, branch = %b, sb = %b, lh = %b, ALUsrc = %b, ALUop = %b, Halt = %b", 
                 regWrite, memtoReg, memWrite, branch, sb, lh, ALUsrc, ALUop, halt);
         $display("IG: immediate = %d", immediate);
-        $display("RF: Rs1 = %d Rs2 = %d", readData1, readData2);
+        $display("RF: Rs1 = %d Rs2 = %d", instruction_out[19:15], instruction_out[24:20]);
         $display("Register file content:");
         $display("x0: %h\tx1: %h", r1, r2);
         $display("x2: %h\tx3: %h", r3, r4);
@@ -301,6 +301,7 @@ module microTestbench;
         $display("x26: %h\tx27: %h", r27, r28);
         $display("x28: %h\tx29: %h", r29, r30);
         $display("x30: %h\tx31: %h", r31, r32);
+        $display("ReadData1 = %h ReadData2 = %h", readData1, readData2);
         $display("#################### EX ####################");
         $display("ALU: operand 1 = %d operand 2 = %d operation = %h", readData1_out, operand2, ALUop_out);
         $display("Result = %d zeroFlag = %d", ALUresult, zeroFlag);

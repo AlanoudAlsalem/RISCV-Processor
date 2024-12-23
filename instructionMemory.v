@@ -7,39 +7,61 @@ module instructionMemory(
     
     // initializing some instruction in the instruction memory
     initial begin 
-        // addi x1, x0, 1 : 0000 0000 0001 0000 0000 0000 1001 0011
         memory[0]   <= 8'h93;
         memory[1]   <= 8'h00;
-        memory[2]   <= 8'h10;
-        memory[3]   <= 8'h00;
-        // addi x2, x0, 2 : 0000 0000 0002 0000 0000 0001 0001 0011
+        memory[2]   <= 8'h40;
+        memory[3]   <= 8'h06;
+        
         memory[4]   <= 8'h13;
         memory[5]   <= 8'h01;
-        memory[6]   <= 8'h20;
-        memory[7]   <= 8'h00;
-        // add x3, x1, x2 : 0100 0000 0001 0001 0001 0001 1011 0011
-        memory[8]   <= 8'hB3;
-        memory[9]   <= 8'h11;
-        memory[10]  <= 8'h11;
-        memory[11]  <= 8'h40;
+        memory[6]   <= 8'h80;
+        memory[7]   <= 8'h0C;
         
-        // halt
-        memory[12]  <= 8'h0;
-        memory[13]  <= 8'h0;
-        memory[14]  <= 8'h0;
-        memory[15]  <= 8'h0;
+        memory[8]   <= 8'h93;
+        memory[9]   <= 8'h01;
+        memory[10]  <= 8'h00;
+        memory[11]  <= 8'h02;
+        
+        memory[12]  <= 8'h13;
+        memory[13]  <= 8'h03;
+        memory[14]  <= 8'h00;
+        memory[15]  <= 8'h00;
 
-        // lh 0000 0000 0100 0000 0010 0010 0000 0011
-        memory[16]  <= 8'h03;
-        memory[17]  <= 8'h22;
-        memory[18]  <= 8'h40;
+        memory[16]  <= 8'h93;
+        memory[17]  <= 8'h03;
+        memory[18]  <= 8'h00;
         memory[19]  <= 8'h00;
 
-        // lui x5 FF 00 32 B8
-        memory[20]  <= 8'hB8;
-        memory[21]  <= 8'h32;
-        memory[22]  <= 8'h00;
-        memory[23]  <= 8'hFF;
+        memory[20]  <= 8'h23;
+        memory[21]  <= 8'hA0;
+        memory[22]  <= 8'h11;
+        memory[23]  <= 8'h00;
+        
+        memory[24]  <= 8'h23;
+        memory[25]  <= 8'hA4;
+        memory[26]  <= 8'h21;
+        memory[27]  <= 8'h00;
+        
+        memory[28]  <= 8'h13;
+        memory[29]  <= 8'h04;
+        memory[30]  <= 8'h00;
+        memory[31]  <= 8'h00;
+
+        memory[32]  <= 8'h93;
+        memory[33]  <= 8'h04;
+        memory[34]  <= 8'h00;
+        memory[35]  <= 8'h00;
+
+        memory[36]  <= 8'h03;
+        memory[37]  <= 8'h82;
+        memory[38]  <= 8'h01;
+        memory[39]  <= 8'h00;
+
+        memory[40]  <= 8'h83;
+        memory[41]  <= 8'h82;
+        memory[42]  <= 8'h81;
+        memory[43]  <= 8'h00;
+
     end
 
     // outputs the instruction from memory (in little endian order)

@@ -7,10 +7,12 @@ module testbench;
        reg17, reg18, reg19, reg20, reg21, reg22, reg23, reg24,
        reg25, reg26, reg27, reg28, reg29, reg30, reg31, reg32;
 
+    wire [31:0] currentInstruction;
+
     reg [31:0] cycles = 0;
 
     CPU DUT(
-        .clock(clk),
+        .clk(clk),
         .reset(reset),
         .reg1(reg1), .reg2(reg2), .reg3(reg3), .reg4(reg4),
         .reg5(reg5), .reg6(reg6), .reg7(reg7), .reg8(reg8),
@@ -19,7 +21,8 @@ module testbench;
         .reg17(reg17), .reg18(reg18), .reg19(reg19), .reg20(reg20),
         .reg21(reg21), .reg22(reg22), .reg23(reg23), .reg24(reg24),
         .reg25(reg25), .reg26(reg26), .reg27(reg27), .reg28(reg28),
-        .reg29(reg29), .reg30(reg30), .reg31(reg31), .reg32(reg32)
+        .reg29(reg29), .reg30(reg30), .reg31(reg31), .reg32(reg32),
+        .currentInstruction(currentInstruction)
     );
 
     initial begin
@@ -32,6 +35,7 @@ module testbench;
     always @ (posedge clk) begin
         cycles = cycles + 1;
         $display("Cycle # %d", cycles);
+        $display("Current instruction: %h", currentInstruction);
         $display("Register file content:");
         $display("x0: %h\tx1: %h", reg1, reg2);
         $display("x2: %h\tx3: %h", reg3, reg4);

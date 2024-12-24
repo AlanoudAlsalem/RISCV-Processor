@@ -16,12 +16,13 @@
 `include "MEM_WB.v"
 
 module CPU(
-    input clock,
+    input clk,
     input reset,
-    output [31:0] reg1, reg2, reg3, reg4, reg5, reg6, reg7, reg8,
-                  reg9, reg10, reg11, reg12, reg13, reg14, reg15, reg16,
-                  reg17, reg18, reg19, reg20, reg21, reg22, reg23, reg24,
-                  reg25, reg26, reg27, reg28, reg29, reg30, reg31, reg32
+    output [31:0]   reg1, reg2, reg3, reg4, reg5, reg6, reg7, reg8,
+                    reg9, reg10, reg11, reg12, reg13, reg14, reg15, reg16,
+                    reg17, reg18, reg19, reg20, reg21, reg22, reg23, reg24,
+                    reg25, reg26, reg27, reg28, reg29, reg30, reg31, reg32,
+                    currentInstruction
 );
 
     assign reg1   = r1;    assign reg2  =  r2;
@@ -40,6 +41,8 @@ module CPU(
     assign reg27  = r27;   assign reg28 =  r28; 
     assign reg29  = r29;   assign reg30 =  r30;
     assign reg31  = r31;   assign reg32 =  r32; 
+
+    assign currentInstruction = readAddress;
 
     wire PCsrc; // mux selection
     wire [31:0] nextAddress, readAddress; // PC input and output

@@ -14,10 +14,13 @@
 `include "ID_EX.v"
 `include "EX_MEM.v"
 `include "MEM_WB.v"
+`include "forwardingUnit.v"
 
 module microTestbench;
     reg clk;
     reg reset; // reset signal
+
+    // -------------------- IF -------------------- //
 
     wire PCsrc; // mux selection
 
@@ -34,7 +37,8 @@ module microTestbench;
         .nextAddress(nextAddress),
         .clk(clk),
         .reset(reset),
-        .readAddress(readAddress)
+        .readAddress(readAddress),
+        .nop(nop)
     );
 
     wire [31:0] PCplus4, PCjump;
@@ -58,6 +62,7 @@ module microTestbench;
         .instruction(instruction)
     );
 
+    // -------------------- ID -------------------- //
 
     //IF_ID buffer outputs
     wire [31:0] PC_out, instruction_out;
@@ -72,7 +77,7 @@ module microTestbench;
         .instruction(instruction_out)
     );
 
-    wire regWrite, memtoReg, memWrite, sb, lh, halt; // ALU signals
+    wire regWrite, memtoReg, memWrite, sb, lh, ld, halt; // control signals
     wire [1:0] ALUsrc; // control signal
     wire [1:0] branch; // control signal
     wire [3:0] ALUop; // control signal
@@ -81,6 +86,7 @@ module microTestbench;
         .opCode(instruction_out[6:0]),
         .funct3(instruction_out[14:12]),
         .funct7(instruction_out[31:25]),
+        .nop(nop),
         .regWrite(regWrite),
         .memtoReg(memtoReg),
         .memWrite(memWrite),
@@ -89,6 +95,7 @@ module microTestbench;
         .ALUop(ALUop),
         .sb(sb),
         .lh(lh),
+        .ld(ld),
         .halt(halt)
     );
 
@@ -113,6 +120,7 @@ module microTestbench;
         .writeData(writeData), 
         .regWrite(regWrite_out2),
         .reset(reset),
+        .clock(clk),
         .readData1(readData1),
         .readData2(readData2),
         .r1(r1), .r2(r2), .r3(r3), .r4(r4),
@@ -125,12 +133,15 @@ module microTestbench;
         .r29(r29), .r30(r30), .r31(r31), .r32(r32)
     );
 
+    // -------------------- EX -------------------- //
+
     //ID_EX buffer output
     wire regWrite_out, memtoReg_out, sb_out, lh_out;
     wire [1:0] branch_out, ALUsrc_out;
     wire [3:0] ALUop_out;
     wire [31:0] PC_out1, readData1_out, readData2_out, immediate_out;
-    wire [4:0] rd;
+    wire [4:0] rd, rs1, rs2;
+    wire ld_out;
 
     ID_EX buffer2(
         .clk(clk),
@@ -148,6 +159,9 @@ module microTestbench;
         .readData2_in(readData2),
         .immediate_in(immediate),
         .rd_in(instruction_out[11:7]),
+        .rs1_in(instruction_out[19:15]),
+        .rs2_in(instruction_out[24:20]),
+        .ld_in(ld),
         // outputs
         .regWrite(regWrite_out),
         .memtoReg(memtoReg_out),
@@ -161,13 +175,58 @@ module microTestbench;
         .readData1(readData1_out),
         .readData2(readData2_out),
         .immediate(immediate_out),
-        .rd(rd)
+        .rd(rd),
+        .rs1(rs1),
+        .rs2(rs2),
+        .ld(ld_out)
     );
 
-    wire [31:0] operand2; // mux selection
+    wire [1:0] forwardOp1, forwardOp2;
+    wire nop;
 
-    mux4_1 mux2(
+    forwardingUnit DUT1a(
+        .clock(clk),
+        .reset(reset),
+        .ID_EX_rd(rd),
+        .EX_MEM_rd(rd_out),
+        .MEM_WB_rd(rd_out1),
+        .IF_ID_rs1(instruction_out[19:15]),
+        .IF_ID_rs2(instruction_out[24:20]),
+        .ID_EX_rs1(rs1),
+        .ID_EX_rs2(rs2),
+        .regWrite_EX_MEM(regWrite_out1),
+        .regWrite_MEM_WB(regWrite_out2),
+        .load_ID_EX(ld_out),
+        .forwardOp1(forwardOp1),
+        .forwardOp2(forwardOp2),
+        .nop(nop)
+    );
+
+    wire [31:0] rs1Forwarded, rs2Forwarded;
+
+    // Rs1 forwarding mux
+    mux4_1 fwd1(
+        .i0(readData1_out),
+        .i1(ALUresult_out), // MEM stage ALU result
+        .i2(writeData), // WB stage write result
+        .select(forwardOp1),
+        .out(rs1Forwarded)
+    );
+
+    // Rs2 forwarding mux
+    mux4_1 fwd2(
         .i0(readData2_out),
+        .i1(ALUresult_out), // MEM stage ALU result
+        .i2(writeData), // WB stage write result
+        .select(forwardOp2),
+        .out(rs2Forwarded)
+    );
+
+    wire [31:0] operand2;
+
+    // choosing the ALU's second operand
+    mux4_1 mux2(
+        .i0(rs2Forwarded),
         .i1(immediate_out),
         .i2(PC_out1),
         .select(ALUsrc_out),
@@ -179,15 +238,17 @@ module microTestbench;
 
     ALU DUT6(
         .operation(ALUop_out),
-        .operand1(readData1_out),
+        .operand1(rs1Forwarded),
         .operand2(operand2),
         .result(ALUresult),
         .zeroFlag(zeroFlag)
     );
 
+    // -------------------- MEM -------------------- //
+
     wire regWrite_out1, memtoReg_out1, memWrite_out1, sb_out1, lh_out1, zeroFlag_out;
     wire [1:0] branch_out1;
-    wire [31:0] readData2_out1, ALUresult_out;
+    wire [31:0] rs2_out, ALUresult_out;
     wire [4:0] rd_out;
 
     EX_MEM buffer3(
@@ -200,7 +261,7 @@ module microTestbench;
         .lh_in(lh_out),
         .zeroFlag_in(zeroFlag),
         .branch_in(branch_out),
-        .readData2_in(readData2_out),
+        .readData2_in(rs2Forwarded),
         .ALUresult_in(ALUresult),
         .rd_in(rd),
         // outputs
@@ -211,7 +272,7 @@ module microTestbench;
         .lh(lh_out1),
         .zeroFlag(zeroFlag_out),
         .branch(branch_out1),
-        .readData2(readData2_out1),
+        .readData2(rs2_out),
         .ALUresult(ALUresult_out),
         .rd(rd_out)
     );
@@ -220,7 +281,7 @@ module microTestbench;
 
     dataMemory DUT7(
         .dataAddress(ALUresult_out),
-        .writeData(readData2_out1),
+        .writeData(rs2_out),
         .memWrite(memWrite_out1),
         .sb(sb_out1),
         .data(data)
@@ -235,6 +296,8 @@ module microTestbench;
     wire regWrite_out2, memtoReg_out2, lh_out2;
     wire [31:0] ALUresult_out1, data_out;
     wire [4:0] rd_out1;
+
+    // -------------------- WB -------------------- //
 
     MEM_WB buffer4(
         .clk(clk),
@@ -269,19 +332,19 @@ module microTestbench;
 
     initial begin
         clk = 0; reset = 0; #1 reset = 1; #4 reset = 0;
-        repeat (32) begin
+        repeat (27) begin
             #5 clk = ~clk;
         end
     end
 
     always @ (posedge clk) begin
         $display("#################### IF ####################");
-        $display("PC: Next Address = %d Read Address = %d", nextAddress, readAddress);
+        $display("PC: Next Address = %d Read Address = %d, nop = %b", nextAddress, readAddress, nop);
         $display("IM: Instruction Address= %d Instruction = %h", readAddress, instruction);
         $display("#################### ID ####################");
         $display("CU: opCode = %h, funct3 = %h, funct7 = %h", instruction_out[6:0], instruction_out[14:12], instruction_out[31:25]); 
-        $display("regWrite = %b, memtoReg = %b, memWrite = %b, branch = %b, sb = %b, lh = %b, ALUsrc = %b, ALUop = %b, Halt = %b", 
-                regWrite, memtoReg, memWrite, branch, sb, lh, ALUsrc, ALUop, halt);
+        $display("nop = %b, regWrite = %b, memtoReg = %b, memWrite = %b, branch = %b, sb = %b, lh = %b, ld = %b, ALUsrc = %b, ALUop = %b, Halt = %b", 
+                nop, regWrite, memtoReg, memWrite, branch, sb, lh, ld, ALUsrc, ALUop, halt);
         $display("IG: immediate = %d", immediate);
         $display("RF: Rs1 = %d Rs2 = %d", instruction_out[19:15], instruction_out[24:20]);
         $display("Register file content:");
@@ -303,10 +366,16 @@ module microTestbench;
         $display("x30: %h\tx31: %h", r31, r32);
         $display("ReadData1 = %h ReadData2 = %h", readData1, readData2);
         $display("#################### EX ####################");
+        $display("ID_EX_rd = %d EX_MEM_rd = %d MEM_WB_rd = %d", rd, rd_out, rd_out1);
+        $display("IF_ID_rs1 = %d IF_ID_rs2 = %d", instruction_out[19:15], instruction_out[24:20]);
+        $display("ID_EX_rs1 = %d ID_EX_rs2 = %d", rs1, rs2);
+        $display("regWrite EX_MEM = %b regWrite MEM_WB = %b", regWrite_out1, regWrite_out2);
+        $display("load = %b", ld_out);
+        $display("Forwarding: forwardOp1 = %b forwardOp2 = %b nop = %b", forwardOp1, forwardOp2, nop);
         $display("ALU: operand 1 = %d operand 2 = %d operation = %h", readData1_out, operand2, ALUop_out);
         $display("Result = %d zeroFlag = %d", ALUresult, zeroFlag);
         $display("#################### MEM ####################");
-        $display("Data address = %d, write Data = %d, Data = %h", ALUresult_out, readData2_out1, data);
+        $display("Data address = %d, write Data = %d, Data = %h", ALUresult_out, rs2_out, data);
         $display("#################### WB ####################");
         $display("Write data = %h", writeData);
         $display("PCsrc = %b PCplus4 = %d PCjump = %d", PCsrc, PCplus4, PCjump);

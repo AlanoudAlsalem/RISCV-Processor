@@ -50,6 +50,7 @@ module controlUnit
 (   input [6:0] opCode,      // 7-bit opCode
     input [2:0] funct3,      // 3-bit funct3
     input [6:0] funct7,      // 7-bit funct7
+    input nop,               // pipeline bubble
     output reg regWrite,     // register file write signal (1 = enable)
     output reg memtoReg,     // WB stage MUX selecion signal (0 = data, 1 = ALUresult)
     output reg memWrite,     // memory write signal = (memory read)'
@@ -58,6 +59,7 @@ module controlUnit
     output reg [3:0] ALUop,  // ALU operation
     output reg sb,           // sb instruction
     output reg lh,           // lh instruction
+    output reg ld,           // lw or lh instruction
     output reg halt          // halts the CPU operation 
 );
         
@@ -71,101 +73,104 @@ module controlUnit
         ALUop       <= 4'b0;
         sb          <= 1'b0;
         lh          <= 1'b0;
+        ld          <= 1'b0;
         halt        <= 1'b0;
-
-        if(opCode == Rtype) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b1; 
-            memWrite    <= 1'b0; 
-            branch      <= 2'b0; 
-            ALUsrc      <= 2'b0; 
-        
-            // assigns the ALUop signal
-            case({funct3, funct7})
-                {addwf3, addwf7}: ALUop <= addop;
-                {andf3, andf7}  : ALUop <= andop;
-                {xorf3, xorf7}  : ALUop <= xorop;
-                {orf3, orf7}    : ALUop <= orop;
-                {sltf3, sltf7}  : ALUop <= sltop;
-                {sllf3, sllf7}  : ALUop <= sllop;
-                {srlf3, srlf7}  : ALUop <= srlop;
-                {subf3, subf7}  : ALUop <= subop; 
-                default         : regWrite <= 1'b0; // for invalid funct3 and funct 7
-            endcase
-        end
-        else if(opCode == addiwOp) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b1; 
-            memWrite    <= 1'b0; 
-            branch      <= 2'b0; 
-            ALUop       <= addop;
-            ALUsrc      <= 2'b1; 
-        end
-        else if(opCode == andiOp) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b1; 
-            memWrite    <= 1'b0; 
-            branch      <= 2'b0; 
-            ALUop       <= andop;
-            ALUsrc      <= 2'b1; 
-        end
-        else if(opCode == jalrOp) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b1; 
-            memWrite    <= 1'b0; 
-            branch      <= jSig; 
-            ALUop       <= jalop;
-            ALUsrc      <= 2'b1; 
-        end
-        else if(opCode == lhOp) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b0; 
-            memWrite    <= 1'b0; 
-            branch      <= 2'b0; 
-            ALUop       <= addop;
-            ALUsrc      <= 2'b1; 
-            lh          <= (funct3 == lhf3) ? 1 : 0;
-        end
-        else if(opCode == oriOp) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b1; 
-            memWrite    <= 1'b0; 
-            branch      <= 2'b0; 
-            ALUop       <= orop;
-            ALUsrc      <= 2'b1;
-        end
-        else if(opCode == beqOp) begin
-            regWrite    <= 1'b0; 
-            memWrite    <= 1'b0;  
-            ALUop       <= subop;
-            ALUsrc      <= 2'b0;
-            branch      <= (opCode == beqOp) ? beqSig : bneSig;
-        end
-        else if(opCode == jalOp) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b1; 
-            memWrite    <= 1'b0; 
-            branch      <= jSig; 
-            ALUop       <= jalop;
-            ALUsrc      <= 2'b10;
-        end
-        else if(opCode == luiOp) begin
-            regWrite    <= 1'b1; 
-            memtoReg    <= 1'b1; 
-            memWrite    <= 1'b0; 
-            branch      <= 2'b0; 
-            ALUop       <= luiop;
-            ALUsrc      <= 2'b1;
-        end
-        else if(opCode == sbOp) begin
-            regWrite    <= 1'b0; 
-            memWrite    <= 1'b1; 
-            branch      <= 2'b0; 
-            ALUop       <= addop;
-            ALUsrc      <= 2'b1;
-            sb          <= (funct3 == 0) ? 1 : 0;
-        end
-        else if(opCode == 7'h0) 
-            halt <= 1;
-    end       
+        if(~nop) begin
+            if(opCode == Rtype) begin
+                regWrite    <= 1'b1; 
+                memtoReg    <= 1'b1; 
+                memWrite    <= 1'b0; 
+                branch      <= 2'b0; 
+                ALUsrc      <= 2'b0; 
+            
+                // assigns the ALUop signal
+                case({funct3, funct7})
+                    {addwf3, addwf7}: ALUop <= addop;
+                    {andf3, andf7}  : ALUop <= andop;
+                    {xorf3, xorf7}  : ALUop <= xorop;
+                    {orf3, orf7}    : ALUop <= orop;
+                    {sltf3, sltf7}  : ALUop <= sltop;
+                    {sllf3, sllf7}  : ALUop <= sllop;
+                    {srlf3, srlf7}  : ALUop <= srlop;
+                    {subf3, subf7}  : ALUop <= subop; 
+                    default         : regWrite <= 1'b0; // for invalid funct3 and funct 7
+                endcase
+            end
+            else if(opCode == addiwOp) begin
+                regWrite    <= 1'b1; 
+                memtoReg    <= 1'b1; 
+                memWrite    <= 1'b0; 
+                branch      <= 2'b0; 
+                ALUop       <= addop;
+                ALUsrc      <= 2'b1; 
+            end
+            else if(opCode == andiOp) begin
+                regWrite    <= 1'b1; 
+                memtoReg    <= 1'b1; 
+                memWrite    <= 1'b0; 
+                branch      <= 2'b0; 
+                ALUop       <= andop;
+                ALUsrc      <= 2'b1; 
+            end
+            else if(opCode == jalrOp) begin
+                regWrite    <= 1'b1; 
+                memtoReg    <= 1'b1; 
+                memWrite    <= 1'b0; 
+                branch      <= jSig; 
+                ALUop       <= jalop;
+                ALUsrc      <= 2'b1; 
+            end
+            else if(opCode == lhOp) begin
+                regWrite    <= 1'b1; 
+                memtoReg    <= 1'b0; 
+                memWrite    <= 1'b0; 
+                branch      <= 2'b0; 
+                ALUop       <= addop;
+                ALUsrc      <= 2'b1; 
+                ld          <= 1'b1;
+                lh          <= (funct3 == lhf3) ? 1 : 0;
+            end
+            else if(opCode == oriOp) begin
+                regWrite    <= 1'b1; 
+                memtoReg    <= 1'b1; 
+                memWrite    <= 1'b0; 
+                branch      <= 2'b0; 
+                ALUop       <= orop;
+                ALUsrc      <= 2'b1;
+            end
+            else if(opCode == beqOp) begin
+                regWrite    <= 1'b0; 
+                memWrite    <= 1'b0;  
+                ALUop       <= subop;
+                ALUsrc      <= 2'b0;
+                branch      <= (opCode == beqOp) ? beqSig : bneSig;
+            end
+            else if(opCode == jalOp) begin
+                regWrite    <= 1'b1; 
+                memtoReg    <= 1'b1; 
+                memWrite    <= 1'b0; 
+                branch      <= jSig; 
+                ALUop       <= jalop;
+                ALUsrc      <= 2'b10;
+            end
+            else if(opCode == luiOp) begin
+                regWrite    <= 1'b1; 
+                memtoReg    <= 1'b1; 
+                memWrite    <= 1'b0; 
+                branch      <= 2'b0; 
+                ALUop       <= luiop;
+                ALUsrc      <= 2'b1;
+            end
+            else if(opCode == sbOp) begin
+                regWrite    <= 1'b0; 
+                memWrite    <= 1'b1; 
+                branch      <= 2'b0; 
+                ALUop       <= addop;
+                ALUsrc      <= 2'b1;
+                sb          <= (funct3 == 0) ? 1 : 0;
+            end
+            else if(opCode == 7'h0) 
+                halt <= 1;
+        end 
+    end      
 endmodule 

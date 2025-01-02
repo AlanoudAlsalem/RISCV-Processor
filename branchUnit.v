@@ -3,7 +3,8 @@ module branchUnit
 # (parameter
     beqSig  = 2'b01,
     bneSig  = 2'b10,
-    jSig    = 2'b11
+    jSig    = 2'b11,
+    bOp   = 7'h63
 )
 
 (   input [1:0] branch,

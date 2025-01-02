@@ -5,7 +5,7 @@ module registerFile(
     input   [31:0]  writeData,  // 32-bit write data
     input           regWrite,   // writing to register file control signal
     input           reset,      // reset signal
-    input           clk,
+    input           clock,
     output  [31:0]  readData1,  // 32-bit read data 1
     output  [31:0]  readData2,  // 32-bit read data 2
     output  [31:0]  r1, r2, r3, r4, r5, r6, r7, r8,

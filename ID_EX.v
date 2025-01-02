@@ -5,14 +5,16 @@ module ID_EX(
     input [1:0] ALUsrc_in,
     input [3:0] ALUop_in,
     input [31:0] PC_in, readData1_in, readData2_in, immediate_in,
-    input [4:0] rd_in,
+    input [4:0] rd_in, rs1_in, rs2_in,
+    input ld_in,
 
     output reg regWrite, memtoReg, memWrite, sb, lh, 
     output reg [1:0] branch, 
     output reg [1:0] ALUsrc,
     output reg [3:0] ALUop,
     output reg [31:0] PC, readData1, readData2, immediate,
-    output reg [4:0] rd
+    output reg [4:0] rd, rs1, rs2,
+    output reg ld
 );
 
 
@@ -31,6 +33,9 @@ module ID_EX(
             readData2   <= 0;
             immediate   <= 0;
             rd          <= 0;
+            rs1         <= 0;
+            rs2         <= 0;
+            ld          <= 0;
         end
         else begin
             regWrite    <= regWrite_in;
@@ -46,6 +51,9 @@ module ID_EX(
             readData2   <= readData2_in;
             immediate   <= immediate_in;
             rd          <= rd_in;
+            rs1         <= rs1_in;
+            rs2         <= rs2_in;
+            ld          <= ld_in;
         end
     end
 

@@ -207,8 +207,8 @@ memAdd = 0
 for line in machine_code:
     hexString = format(int(line, 2), '08x')
 
-    print(f"memory[{memAdd}]\t<={hexString[-2:]}")
-    print(f"memory[{memAdd + 1}]\t<={hexString[-4:-2]}")
-    print(f"memory[{memAdd + 2}]\t<={hexString[-6:-4]}")
-    print(f"memory[{memAdd + 3}]\t<={hexString[-8:-6]}\n")
+    print(f"memory[{memAdd}]\t<= 32'h{hexString[-2:]}")
+    print(f"memory[{memAdd + 1}]\t<= 32'h{hexString[-4:-2]}")
+    print(f"memory[{memAdd + 2}]\t< 32'h{hexString[-6:-4]}")
+    print(f"memory[{memAdd + 3}]\t<= 32'h{hexString[-8:-6]}\n")
     memAdd = memAdd + 4

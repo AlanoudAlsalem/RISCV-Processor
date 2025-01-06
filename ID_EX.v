@@ -1,5 +1,5 @@
 module ID_EX(
-    input clk, reset,
+    input clock, reset, nop,
     input regWrite_in, memtoReg_in, memWrite_in, sb_in, lh_in, 
     input [1:0] branch_in, 
     input [1:0] ALUsrc_in,
@@ -7,6 +7,7 @@ module ID_EX(
     input [31:0] PC_in, readData1_in, readData2_in, immediate_in,
     input [4:0] rd_in, rs1_in, rs2_in,
     input ld_in,
+    input halt_in,
 
     output reg regWrite, memtoReg, memWrite, sb, lh, 
     output reg [1:0] branch, 
@@ -14,12 +15,13 @@ module ID_EX(
     output reg [3:0] ALUop,
     output reg [31:0] PC, readData1, readData2, immediate,
     output reg [4:0] rd, rs1, rs2,
-    output reg ld
+    output reg ld,
+    output reg halt
 );
 
 
-    always @ (posedge clk or posedge reset) begin
-        if (reset) begin
+    always @ (posedge clock or posedge reset) begin
+        if (reset || nop) begin
             regWrite    <= 0;
             memtoReg    <= 0;
             memWrite    <= 0;
@@ -36,6 +38,7 @@ module ID_EX(
             rs1         <= 0;
             rs2         <= 0;
             ld          <= 0;
+            halt        <= 0;
         end
         else begin
             regWrite    <= regWrite_in;
@@ -54,6 +57,7 @@ module ID_EX(
             rs1         <= rs1_in;
             rs2         <= rs2_in;
             ld          <= ld_in;
+            halt        <= halt_in;
         end
     end
 

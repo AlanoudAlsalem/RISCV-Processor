@@ -3,7 +3,7 @@ def hexToBin(hexNum):
         '0' : '0000', '1' : '0001',
         '2' : '0010', '3' : '0011',
         '4' : '0100', '5' : '0101',
-        '6' : '0100', '7' : '0111',
+        '6' : '0110', '7' : '0111',
         '8' : '1000', '9' : '1001',
         'A' : '1010', 'B' : '1011',
         'C' : '1100', 'D' : '1101',
@@ -52,6 +52,7 @@ def assemble_riscv(assembly_code):
         "lui"   : hexToBin('38')[-7:],
         "sb"    : hexToBin('23')[-7:],
         "sw"    : hexToBin('23')[-7:],
+        "halt"  : hexToBin('7F')[-7:],
     }
     
     func3 = {
@@ -135,6 +136,16 @@ def assemble_riscv(assembly_code):
             opcode = opcodes[instruction]
             funct3 = func3[instruction]
             binary = f"{imm}{rs1_bin}{funct3}{rd}{opcode}"
+
+        elif instruction == "jalr":
+            rd = registers[parts[1]]
+            offset, rs1 = parts[2].split("(")
+            rs1 = rs1.rstrip(")")
+            rs1_bin = registers[rs1]
+            imm = to_twos_complement(int(offset), 12)
+            opcode = opcodes[instruction]
+            funct3 = func3[instruction]
+            binary = f"{imm}{rs1_bin}{funct3}{rd}{opcode}"
         
         elif instruction in Itype:
             rd = registers[parts[1]]
@@ -180,6 +191,10 @@ def assemble_riscv(assembly_code):
             opcode = opcodes[instruction]
             binary = f"{imm}{rd}{opcode}"
 
+        elif instruction == "halt":
+            allOnes = hexToBin("FFFFFFFF")
+            binary = f"{allOnes}"
+
         else:
             raise ValueError(f"Unsupported instruction: {instruction}")
 
@@ -187,22 +202,39 @@ def assemble_riscv(assembly_code):
 
     return machine_code
 
-# Example usage
-assembly_code = """
-addiw x1 x0 100 
-addiw x2 x0 200 
-addiw x3 x0 32  
-addiw x6 x0 0   
-addiw x7 x0 0   
-sw x1 0(x3)     
-sw x2 8(x3)     
-addiw x8 x0 0   
-addiw x9 x0 0   
-lw x4 0(x3)     
-lw x5 -8(x3)     
+benchmark1 = """
+addiw x1 x0 20      
+addiw x2 x0 15      
+addw x3 x1 x2       
+sub x4 x3 x1        
+andi x5 x1 15     
+xor x6 x2 x1        
+or x7 x5 x6         
+ori x8 x7 255      
+halt
 """
 
-machine_code = assemble_riscv(assembly_code)
+benchmark2 = """
+addiw x2 x0 10   
+addiw x3 x0 20   
+addiw x5 x0 30   
+addw x1 x2 x3    
+addw x4 x1 x5    
+addw x6 x1 x4    
+halt
+"""
+
+benchmark3 = """
+addiw x1 x0 0         
+addiw x2 x0 10        
+addiw x3 x0 0          
+addw x3 x3 x1       
+addiw x1 x1 1       
+bne x1 x2 -4      
+halt
+"""
+
+machine_code = assemble_riscv(benchmark3)
 memAdd = 0
 for line in machine_code:
     hexString = format(int(line, 2), '08x')

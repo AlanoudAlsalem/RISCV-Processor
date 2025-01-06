@@ -1,17 +1,19 @@
 module EX_MEM(
-    input clk, reset,
+    input clock, reset,
     input regWrite_in, memtoReg_in, memWrite_in, sb_in, lh_in, zeroFlag_in,
     input [1:0] branch_in, 
     input [31:0] readData2_in, ALUresult_in,
     input [4:0] rd_in,
+    input halt_in,
 
     output reg regWrite, memtoReg, memWrite, sb, lh, zeroFlag,
     output reg [1:0] branch, 
     output reg [31:0] readData2, ALUresult,
-    output reg [4:0] rd
+    output reg [4:0] rd,
+    output reg halt
 );
 
-    always @ (posedge clk or posedge reset) begin
+    always @ (posedge clock or posedge reset) begin
         if (reset) begin
             regWrite    <= 0;
             memtoReg    <= 0;
@@ -23,6 +25,7 @@ module EX_MEM(
             readData2   <= 0;
             ALUresult   <= 0;
             rd          <= 0;
+            halt        <= 0;
         end
         else begin
             regWrite    <= regWrite_in;
@@ -35,6 +38,7 @@ module EX_MEM(
             readData2   <= readData2_in;
             ALUresult   <= ALUresult_in;
             rd          <= rd_in;
+            halt        <= halt_in;
         end
     end
 

@@ -14,35 +14,35 @@ module registerFile(
                     r25, r26, r27, r28, r29, r30, r31, r32
 );
 
-  reg [31:0] registers [31:0];  // 32 registers with 32 bits in each register
+reg [31:0] registers [31:0];  // 32 registers with 32 bits in each register
+assign readData1 = registers[readReg1];  // reading data 1
+assign readData2 = registers[readReg2];  // reading data  
 
-  assign readData1 = registers[readReg1];  // reading data 1
-  assign readData2 = registers[readReg2];  // reading data  
+// register file content for testing purposes
+assign r1   = registers[0];     assign r2  = registers[1];
+assign r3   = registers[2];     assign r4  = registers[3];
+assign r5   = registers[4];     assign r6  = registers[5];
+assign r7   = registers[6];     assign r8  = registers[7];
+assign r9   = registers[8];     assign r10 = registers[9];
+assign r11  = registers[10];    assign r12 = registers[11];
+assign r13  = registers[12];    assign r14 = registers[13];
+assign r15  = registers[14];    assign r16 = registers[15];
+assign r17  = registers[16];    assign r18 = registers[17];
+assign r19  = registers[18];    assign r20 = registers[19];
+assign r21  = registers[20];    assign r22 = registers[21];
+assign r23  = registers[22];    assign r24 = registers[23];
+assign r25  = registers[24];    assign r26 = registers[25];
+assign r27  = registers[26];    assign r28 = registers[27]; 
+assign r29  = registers[28];    assign r30 = registers[29];
+assign r31  = registers[30];    assign r32 = registers[31]; 
 
-  assign r1   = registers[0];     assign r2  = registers[1];
-  assign r3   = registers[2];     assign r4  = registers[3];
-  assign r5   = registers[4];     assign r6  = registers[5];
-  assign r7   = registers[6];     assign r8  = registers[7];
-  assign r9   = registers[8];     assign r10 = registers[9];
-  assign r11  = registers[10];    assign r12 = registers[11];
-  assign r13  = registers[12];    assign r14 = registers[13];
-  assign r15  = registers[14];    assign r16 = registers[15];
-  assign r17  = registers[16];    assign r18 = registers[17];
-  assign r19  = registers[18];    assign r20 = registers[19];
-  assign r21  = registers[20];    assign r22 = registers[21];
-  assign r23  = registers[22];    assign r24 = registers[23];
-  assign r25  = registers[24];    assign r26 = registers[25];
-  assign r27  = registers[26];    assign r28 = registers[27]; 
-  assign r29  = registers[28];    assign r30 = registers[29];
-  assign r31  = registers[30];    assign r32 = registers[31]; 
-
-  always @ (posedge regWrite or writeReg or writeData or reset) begin
-    if(reset)
-        for(integer i = 0; i < 32; i = i+1)
-          registers[i] <= 32'b0; // assigns zero to entire register file
-    else if(regWrite)
-      if(writeReg != 5'b0) // ensures that x0 stays 0
-        registers[writeReg] <= writeData; // writing to register file
-  end
+always @ (posedge regWrite or writeReg or writeData or reset) begin
+  if(reset)
+      for(integer i = 0; i < 32; i = i+1)
+        registers[i] <= 32'b0; // assigns zero to entire register file
+  else if(regWrite)
+    if(writeReg != 5'b0) // ensures that x0 stays 0
+      registers[writeReg] <= writeData; // writing to register file
+end
   
 endmodule

@@ -1,8 +1,7 @@
 module dataMemory(
     input [31:0] dataAddress,
     input [31:0] writeData,
-    input memWrite,
-    input sb,
+    input memWrite, sb,
     output [31:0] data,
     output [31:0] m0,   m4,     m8,     m12,    m16,     
                   m20,  m24,    m28,    m32,    m36

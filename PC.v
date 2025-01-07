@@ -1,6 +1,6 @@
 // The program counter provides the instruction address (readAddress), to the instruction memory.
 module PC(
-    input [31:0] nextAddress,
+    input [31:0] nextAddress, immediate,
     input clock, reset, nop, branch,
     output reg [31:0] readAddress
 );
@@ -20,6 +20,10 @@ module PC(
     always @ (negedge clock) begin
         if (nop)
             readAddress <= readAddress - 4;
+    end
+
+    always @ (posedge branch) begin
+        readAddress <= nextAddress;
     end
 
 endmodule

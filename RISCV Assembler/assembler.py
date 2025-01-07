@@ -234,7 +234,17 @@ bne x1 x2 -4
 halt
 """
 
-machine_code = assemble_riscv(benchmark3)
+branchtesting = """
+addiw x1 x0 5        
+addiw x2 x0 5        
+addiw x3 x0 10          
+addiw x4 x0 15
+beq x1 x2 4
+addiw x5 x0 1
+halt
+"""
+
+machine_code = assemble_riscv(branchtesting)
 memAdd = 0
 for line in machine_code:
     hexString = format(int(line, 2), '08x')

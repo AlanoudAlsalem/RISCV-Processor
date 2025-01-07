@@ -29,7 +29,7 @@ module forwardingUnit
         ID_forwardOp2   <= 2'b0;
         nop             <= 1'b0;
 
-        nop =   (load_ID_EX || opCode == bOp || opCode == jalrOp) && 
+        nop <=  (load_ID_EX || opCode == bOp || opCode == jalrOp) && 
                 (ID_EX_rd != 0) && 
                 (ID_EX_rd == IF_ID_rs1 | ID_EX_rd == IF_ID_rs2) ? 1 : 0;
 

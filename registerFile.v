@@ -1,11 +1,11 @@
 module registerFile(
+    input           reset,  
+    input           clock,
     input   [4:0]   readReg1,   // 5-bit address of first read register
     input   [4:0]   readReg2,   // 5-bit address of second read register
     input   [4:0]   writeReg,   // 5-bit address of write reg
     input   [31:0]  writeData,  // 32-bit write data
     input           regWrite,   // writing to register file control signal
-    input           reset,      // reset signal
-    input           clock,
     output  [31:0]  readData1,  // 32-bit read data 1
     output  [31:0]  readData2,  // 32-bit read data 2
     output  [31:0]  r1, r2, r3, r4, r5, r6, r7, r8,

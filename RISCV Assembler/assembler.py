@@ -234,6 +234,29 @@ bne x1 x2 -4
 halt
 """
 
+benchmark4 = """
+addiw x1 x0 32   
+addiw x2 x0 100  
+addiw x3 x0 200  
+sw x2 0(x1)      
+sw x3 4(x1)      
+lw x4 0(x1)      
+lw x5 4(x1)   
+halt   
+"""
+
+benchmark5 = """
+addiw x1 x0 15      
+addiw x2 x0 10      
+slt x3 x1 x2        
+beq x3 x0 8        
+addiw x4 x0 1       
+beq x0 x0 4      
+addiw x4 x0 0  
+addiw x5 x0 42 
+halt
+"""
+
 branchtesting = """
 addiw x1 x0 5        
 addiw x2 x0 5        
@@ -244,7 +267,7 @@ addiw x5 x0 1
 halt
 """
 
-machine_code = assemble_riscv(benchmark3)
+machine_code = assemble_riscv(benchmark5)
 memAdd = 0
 for line in machine_code:
     hexString = format(int(line, 2), '08x')

@@ -8,7 +8,8 @@ module PC(
     always @ (posedge reset or posedge clock) begin
         if(reset)
             readAddress <= 32'b0;
-        else begin
+        else begin 
+            $display("NEXT ADDRESS");
             readAddress <= nextAddress;
         end
     end
@@ -18,12 +19,13 @@ module PC(
     // 2. The forwarding unit would have produced the nop signal
     // Using the negative edge allows for determining the PC value in the same cycle the signals are produced
     always @ (negedge clock) begin
-        if (nop)
+        if (nop) begin
+            $display("NOP");
             readAddress <= readAddress - 4;
+        end
+        else if(branch) begin
+            $display("BRANCH");
+            readAddress <= nextAddress;
+        end
     end
-
-    always @ (posedge branch) begin
-        readAddress <= nextAddress;
-    end
-
 endmodule

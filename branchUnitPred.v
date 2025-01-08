@@ -8,7 +8,7 @@ module branchUnitPred
     jalrOp  = 7'h67
 )
 
-(   input reset,
+(   input clock, reset, nop,
     input [6:0] opCode,
     input [2:0] funct3,
     input [31:0] operand1, operand2,
@@ -16,15 +16,26 @@ module branchUnitPred
 );
 
     // the default is branch not taken -> PC = PC + 4
-    always @ (operand1 or operand2) begin
-        if (reset)
+    always @ (*) begin
+        if(reset)
             PCsrc <= 0;
-        else
-            PCsrc <=
-                (opCode == bOp && funct3 == beqf3 && (operand1 == operand2)) || 
-                (opCode == bOp && funct3 == bnef3 && ~(operand1 == operand2)) || 
-                (opCode == jalOp) ||
-                (opCode == jalrOp);
+        else if (~nop) begin
+            if ((opCode == bOp) && (funct3 == beqf3) && (operand1 == operand2) && clock)
+                PCsrc <= 1;
+            else if ((opCode == bOp) && (funct3 == bnef3) && ~(operand1 == operand2) && clock)
+                PCsrc <= 1;
+            else if (opCode == jalOp)
+                PCsrc <= 1;
+            else if(opCode == jalrOp)
+                PCsrc <= 1;
+            else 
+                PCsrc <= 0;
+        end
+        else 
+            PCsrc <= 0;
     end
+
+    always @ (negedge clock)
+        PCsrc <= 0;
 
 endmodule

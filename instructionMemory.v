@@ -9,33 +9,33 @@ module instructionMemory(
     initial begin 
        memory[0]       <= 8'h93;
 memory[1]       <= 8'h00;
-memory[2]       <= 8'h50;
+memory[2]       <= 8'h00;
 memory[3]       <= 8'h00;
 
 memory[4]       <= 8'h13;
 memory[5]       <= 8'h01;
-memory[6]       <= 8'h50;
+memory[6]       <= 8'ha0;
 memory[7]       <= 8'h00;
 
 memory[8]       <= 8'h93;
 memory[9]       <= 8'h01;
-memory[10]      <= 8'ha0;
+memory[10]      <= 8'h00;
 memory[11]      <= 8'h00;
 
-memory[12]      <= 8'h13;
-memory[13]      <= 8'h02;
-memory[14]      <= 8'hf0;
-memory[15]      <= 8'h00;
+memory[12]      <= 8'hb3;
+memory[13]      <= 8'h91;
+memory[14]      <= 8'h11;
+memory[15]      <= 8'h40;
 
-memory[16]      <= 8'h63;
-memory[17]      <= 8'h82;
-memory[18]      <= 8'h20;
+memory[16]      <= 8'h93;
+memory[17]      <= 8'h80;
+memory[18]      <= 8'h10;
 memory[19]      <= 8'h00;
 
-memory[20]      <= 8'h93;
-memory[21]      <= 8'h02;
-memory[22]      <= 8'h10;
-memory[23]      <= 8'h00;
+memory[20]      <= 8'h63;
+memory[21]      <= 8'h9e;
+memory[22]      <= 8'h20;
+memory[23]      <= 8'hfe;
 
 memory[24]      <= 8'hff;
 memory[25]      <= 8'hff;

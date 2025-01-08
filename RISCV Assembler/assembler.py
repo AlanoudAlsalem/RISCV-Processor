@@ -244,7 +244,7 @@ addiw x5 x0 1
 halt
 """
 
-machine_code = assemble_riscv(branchtesting)
+machine_code = assemble_riscv(benchmark3)
 memAdd = 0
 for line in machine_code:
     hexString = format(int(line, 2), '08x')

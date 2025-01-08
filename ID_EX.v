@@ -1,5 +1,5 @@
 module ID_EX(
-    input clock, reset,
+    input clock, reset, nop, // do not let decoded instruction execute when nop
     input regWrite_in, memtoReg_in, memWrite_in, sb_in, lh_in, ld_in, halt_in,
     input [1:0] ALUsrc_in,
     input [3:0] ALUop_in,
@@ -15,7 +15,7 @@ module ID_EX(
 
 
     always @ (posedge clock or posedge reset) begin
-        if (reset) begin
+        if (reset || nop) begin
             regWrite    <= 0;
             memtoReg    <= 0;
             memWrite    <= 0;

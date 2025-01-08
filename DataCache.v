@@ -8,7 +8,8 @@ module DataCache(
     input writeEnable, 
     input writeFromMemory,
     output [31:0] data,
-    output hit, stall
+    output reg stall
+    output hit
 );
 
 // mapping addresses in real time (dividing the address into segments)
@@ -22,7 +23,7 @@ reg [31:0] data_array[15:0][15:0]; //16 blocks, each with 16 words (16x16 array)
 reg [21:0] tag_array[15:0]; // 22-bit tag array (one tag per block)
 reg valid_array[15:0]; //valid bit array (one valid bit per block)
 
-reg hit_reg;
+wire hit_reg;
 
 assign hit_reg = valid_array[index] && (tag == tag_array[index]);
 
@@ -46,13 +47,7 @@ always @(posedge clock or posedge reset) begin
             end
         end
         else begin
-            stall <= 1;
-            // if we are writing from memory
-            if (writeFromMemory) begin 
-                valid_array[index] <= 1; 
-                tag_array[index] <= tag; //update tag for cache 
-                data_array[index][word_offset] <= write_data; //write data on appropriate line in cache 
-            end    
+            stall <= 1;    
         end 
     end 
 end

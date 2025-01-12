@@ -1,19 +1,26 @@
-module branchPredictor(
-    input [6:0] ID_opcode, EX_opcode;
-	input reset, wrongPrediction, clock,
-    output predicted // 1 = taken 0 = not taken
+
+module branchPredictor
+# (parameter
+    bOp     = 7'h63,
+    jalOp   = 7'h6F,
+    jalrOp  = 7'h67
+)
+
+(   input reset, PCsrc,
+    input [6:0] opCode,
+    output reg predicted, // 1 = taken 0 = not taken
+    output reg [1:0] state // 2-bit state (00 NT | 01 NT | 10 T | 11 T)
 );
-
-    reg [1:0] state; // 2-bit state (00 NT | 01 NT | 10 T | 11 T)
-
-    always @ (posedge reset or posedge clk) begin
+	
+	// branch predictor
+    always @ (reset or opCode or PCsrc) begin
 		// active high reset to 00
 		if (reset) begin
 			state <= 2'b0;
 			predicted <= 1'b0;
 		end
-		else if (opcode == beq || opcode == bne) begin
-			case ({state, Wrong_prediction}) 
+		else if (opCode == bOp) begin
+			case ({state, PCsrc ^ predicted}) // wrong predection if PCsrc and predicted are different (PCsrc XOR predicted = 1)
 				{2'b00, 1'b0}: begin
 					predicted <= 1'b0;
 				end
@@ -44,10 +51,12 @@ module branchPredictor(
 					predicted <= 1'b1;
 					state <= 2'b10;
 				end
+                default: predicted <= predicted;
 			endcase
 		end
-		else 
-			predicted = 1'b0;
+		else if (opCode == jalOp || opCode == jalrOp)
+			predicted = 1'b1; // banch is always taken for jumps
+        else
+            predicted = 1'b0; // banch is never taken for other instructions
 	end
-
 endmodule

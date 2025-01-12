@@ -9,7 +9,6 @@ module PC(
         if(reset)
             readAddress <= 32'b0;
         else begin 
-            $display("NEXT ADDRESS");
             readAddress <= nextAddress;
         end
     end
@@ -20,11 +19,9 @@ module PC(
     // Using the negative edge allows for determining the PC value in the same cycle the signals are produced
     always @ (negedge clock) begin
         if (nop) begin
-            $display("NOP");
             readAddress <= readAddress - 4;
         end
         else if(branch) begin
-            $display("BRANCH");
             readAddress <= nextAddress;
         end
     end

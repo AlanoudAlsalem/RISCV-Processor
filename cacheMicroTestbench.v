@@ -5,7 +5,6 @@
 `include "registerFile.v"
 `include "mux4_1.v"
 `include "ALU.v"
-`include "dataMemory.v"
 `include "mux2_1.v"
 `include "branchUnitPred.v"
 `include "adder.v"
@@ -15,8 +14,10 @@
 `include "EX_MEM.v"
 `include "MEM_WB.v"
 `include "forwardingUnit.v"
+`include "DataCache.v"
+`include "instructionCache.v"
 
-module cacheMicroTestbench;
+module microTestbench;
     reg clock;
     reg reset; // reset signal
 
@@ -43,6 +44,8 @@ module cacheMicroTestbench;
     wire [31:0] branchUnitOperand1, branchUnitOperand2;
     //branch Unit
     wire PCsrc;
+    wire predicted;
+    wire [1:0] state;
     // forwarding unit 
     wire [1:0] forwardOp1, forwardOp2, ID_forwardOp1, ID_forwardOp2;
     wire nop;
@@ -61,11 +64,13 @@ module cacheMicroTestbench;
     wire zeroFlag;
     // MEM STAGE ##################################################################
     // buffer
-    wire regWrite_EX_MEM_out, memtoReg_EX_MEM_out, memWrite_EX_MEM_out, sb_EX_MEM_out, lh_EX_MEM_out, halt_EX_MEM_out;
+    wire regWrite_EX_MEM_out, memtoReg_EX_MEM_out, memWrite_EX_MEM_out, sb_EX_MEM_out, lh_EX_MEM_out, ld_EX_MEM_out, halt_EX_MEM_out;
     wire [31:0] readData2_EX_MEM_out, ALUresult_EX_MEM_out;
     wire [4:0] rd_EX_MEM_out;
     // data memory outputs
     wire [31:0] data, m0, m4, m8, m12, m16, m20, m24, m28, m32, m36;
+    wire [31:0] c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10,
+                c11, c12, c13, c14, c15;
     // WB STAGE ##################################################################
     // buffer
     wire regWrite_MEM_WB_out, memtoReg_MEM_WB_out, lh_MEM_WB_out, halt_MEM_WB_out;
@@ -91,7 +96,7 @@ PC programCounter(
     .nop(nop),
     .branch(PCsrc),
     .immediate(immediate),
-    .nextAddress(pcPlus4),
+    .nextAddress(selectedPC),
     //output
     .readAddress(readAddress)
 );
@@ -114,7 +119,9 @@ mux2_1 pcBranchAdderMux(
      .sum(pcBranched)
  );
 
-instructionMemory instMem(
+InstructionCache instMem(
+    .reset(reset),
+    .clock(clock),
     .instructionAddress(readAddress),
     .instruction(instruction)
 );
@@ -191,13 +198,17 @@ mux4_1 branchUnitOp2Mux(
 );
 
 branchUnitPred branchUnit(
+    .clock(clock),
     .reset(reset),
+    .nop(nop),
     .opCode(instruction_IF_ID_out[6:0]),
     .funct3(instruction_IF_ID_out[14:12]),
     .operand1(branchUnitOperand1),
     .operand2(branchUnitOperand2),
-    // output
-    .PCsrc(PCsrc)
+    // outputs
+    .PCsrc(PCsrc),
+    .predicted(predicted),
+    .state(state)
 );
 
 forwardingUnit fwUnit(
@@ -211,9 +222,11 @@ forwardingUnit fwUnit(
     .IF_ID_rs2(instruction_IF_ID_out[24:20]), 
     .ID_EX_rs1(rs1_ID_EX_out), 
     .ID_EX_rs2(rs2_ID_EX_out),
+    .regWrite_ID_EX(regWrite_ID_EX_out), 
     .regWrite_EX_MEM(regWrite_EX_MEM_out), 
     .regWrite_MEM_WB(regWrite_MEM_WB_out), 
     .load_ID_EX(ld_ID_EX_out), 
+    .load_EX_MEM(),
     .branch(),
     // outputs
     .forwardOp1(forwardOp1), 
@@ -227,6 +240,7 @@ forwardingUnit fwUnit(
 ID_EX bufferID_EX(
     .clock(clock),
     .reset(reset),
+    .nop(nop),
     .regWrite_in(regWrite),
     .memtoReg_in(memtoReg),
     .memWrite_in(memWrite),
@@ -304,6 +318,7 @@ EX_MEM bufferEX_MEM(
     .memWrite_in(memWrite_ID_EX_out), 
     .sb_in(sb_ID_EX_out), 
     .lh_in(lh_ID_EX_out),
+    .ld_in(ld_ID_EX_out),
     .readData2_in(forwardedOp2),
     .ALUresult_in(ALUresult),
     .rd_in(rd_ID_EX_out),
@@ -314,21 +329,26 @@ EX_MEM bufferEX_MEM(
     .memWrite(memWrite_EX_MEM_out), 
     .sb(sb_EX_MEM_out), 
     .lh(lh_EX_MEM_out),
+    .ld(ld_EX_MEM_out),
     .readData2(readData2_EX_MEM_out),
     .ALUresult(ALUresult_EX_MEM_out),
     .rd(rd_EX_MEM_out),
     .halt(halt_EX_MEM_out)
 );
 
-dataMemory dataMem(
-    .dataAddress(ALUresult_EX_MEM_out),
-    .writeData(readData2_EX_MEM_out),
-    .memWrite(memWrite_EX_MEM_out),
+
+DataCache dataCache(
+    .reset(reset),
+    .clock(clock),
     .sb(sb_EX_MEM_out),
-    // outputs
+    .address(ALUresult_EX_MEM_out),
+    .writeData(readData2_EX_MEM_out),
+    .writeEnable(memWrite_EX_MEM_out),
     .data(data),
     .m0(m0),    .m4(m4),    .m8(m8),    .m12(m12),  .m16(m16),     
-    .m20(m20),  .m24(m24),  .m28(m28),  .m32(m32),  .m36(m36)
+    .m20(m20),  .m24(m24),  .m28(m28),  .m32(m32),  .m36(m36),
+    .c0(c0) ,.c1(c1) ,.c2(c2) ,.c3(c3) ,.c4(c4) ,.c5(c5) ,.c6(c6) ,.c7(c7) ,.c8(c8),
+    .c9(c9) ,.c10(c10), .c11(c11), .c12(c12), .c13(c13), .c14(c14), .c15(c15)
 );
 
 // ################################################# WB #################################################
@@ -369,17 +389,14 @@ mux2_1 memtoRegMux(
     // ####################################################### TESTING #######################################################
 
     initial begin
-        clock = 0; reset = 0; #1 reset = 1; #4 reset = 0;
-        forever #5 clock = ~clock;
+        $dumpfile("benchmark3.vcd");
+        $dumpvars(0, microTestbench);
     end
-
     integer cycles = 0;
 
-    always @ (posedge clock) begin
-        if(halt_MEM_WB_out)
-            $finish;
-        
+    initial begin
         cycles = cycles + 1;
+        clock = 0; reset = 0; #1 reset = 1; #4 
         $display("\n---------------------------------------------------------------------------");
         $display("Cycle #%d", cycles);
         $display("\n---------------------------------------------------------------------------");
@@ -431,6 +448,77 @@ mux2_1 memtoRegMux(
         $display("m20: %d\tm24: %d", m20, m24);
         $display("m28: %d\tm32: %d", m28, m32);
         $display("m36: %d", m36);
+        $display("############################### WB ###############################");
+        $display("Sign Extender Output = %d ALUresult = %d, select = %b", signExtenderOutputData, ALUresult_MEM_WB_out, memtoReg_MEM_WB_out);
+        $display("Write back data = %d", writeBackData);
+
+        reset = 0;
+        
+        forever #5 clock = ~clock;
+    end
+
+    
+
+    always @ (posedge clock) begin
+        if(halt_MEM_WB_out)
+            $finish;
+        
+        cycles = cycles + 1;
+        #1
+        $display("\n----------------------------------posedge-----------------------------------------");
+        $display("Cycle #%d", cycles);
+        $display("\n---------------------------------------------------------------------------");
+        $display("############################### IF ###############################");
+        $display("PCplus4 = %d pcBranched = %d, PCsrc = %b, selected PC = %d", pcPlus4, pcBranched, PCsrc, selectedPC);
+        $display("PC output: readAddress = %d", readAddress);
+        $display("jalr = %b, pcBranchOperand = %d", jalr, $signed(pcBranchOperand));
+        $display("Instruction Memory: Instruction Address= %d Instruction = %h", readAddress, instruction);
+        $display("############################### ID ###############################");
+        $display("CU: opCode = %h, funct3 = %h, funct7 = %h", instruction_IF_ID_out[6:0], instruction_IF_ID_out[14:12], instruction_IF_ID_out[31:25]); 
+        $display("nop = %b, regWrite = %b, memtoReg = %b, memWrite = %b, sb = %b, lh = %b, ld = %b, ALUsrc = %b, ALUop = %b, jalr = %b Halt = %b", 
+                nop, regWrite, memtoReg, memWrite, sb, lh, ld, ALUsrc, ALUop, jalr, halt);
+        $display("immediate = %d", $signed(immediate));
+        $display("Rs1 = %d Rs2 = %d", instruction_IF_ID_out[19:15], instruction_IF_ID_out[24:20]);
+        $display("Register file content:");
+        $display("x0: %d \tx1: %d",   $signed(r1), $signed(r2));
+        $display("x2: %d \tx3: %d",   $signed(r3), $signed(r4));
+        $display("x4: %d \tx5: %d",   $signed(r5), $signed(r6));
+        $display("x6: %d \tx7: %d",   $signed(r7), $signed(r8));
+        $display("x8: %d \tx9: %d",   $signed(r9), $signed(r10));
+        $display("x10: %d\tx11: %d", $signed(r11), $signed(r12));
+        $display("x12: %d\tx13: %d", $signed(r13), $signed(r14));
+        $display("x14: %d\tx15: %d", $signed(r15), $signed(r16));
+        $display("x16: %d\tx17: %d", $signed(r17), $signed(r18));
+        $display("x18: %d\tx19: %d", $signed(r19), $signed(r20));
+        $display("x20: %d\tx21: %d", $signed(r21), $signed(r22));
+        $display("x22: %d\tx23: %d", $signed(r23), $signed(r24));
+        $display("x24: %d\tx25: %d", $signed(r25), $signed(r26));
+        $display("x26: %d\tx27: %d", $signed(r27), $signed(r28));
+        $display("x28: %d\tx29: %d", $signed(r29), $signed(r30));
+        $display("x30: %d\tx31: %d", $signed(r31), $signed(r32));
+        $display("ReadData1 = %d ReadData2 = %d", readData1, readData2);
+        $display("ID_EX_rd = %d EX_MEM_rd = %d MEM_WB_rd = %d", rd_ID_EX_out, rd_EX_MEM_out, rd_MEM_WB_out);
+        $display("IF_ID_rs1 = %d IF_ID_rs2 = %d", instruction_IF_ID_out[19:15], instruction_IF_ID_out[24:20]);
+        $display("ID_EX_rs1 = %d ID_EX_rs2 = %d", rs1_ID_EX_out, rs2_ID_EX_out);
+        $display("regWrite EX_MEM = %b regWrite MEM_WB = %b", regWrite_EX_MEM_out, regWrite_MEM_WB_out);
+        $display("load_ID_EX = %b", ld_ID_EX_out);
+        $display("Forwarding: forwardOp1 = %b forwardOp2 = %b ID_forwardOp1 = %b ID_forwardOp2 = %b nop = %b, opCode = %h", 
+            forwardOp1, forwardOp2, ID_forwardOp1, ID_forwardOp2, nop, instruction_IF_ID_out[6:0]);
+        $display("Branch unit op1 = %d op2 = %d, PCsrc = %b, predicted = %b, state = %b", branchUnitOperand1, branchUnitOperand2, PCsrc, predicted, state);
+        $display("############################### EX ###############################");
+        $display("ALU: operand 1 = %d operand 2 = %d operation = %h", forwardedOp1, selectedOp2, ALUop_ID_EX_out);
+        $display("Result = %d zeroFlag = %d", ALUresult, zeroFlag);
+        $display("############################### MEM ###############################");
+        $display("Data address = %d, write Data = %d, output Data = %d", ALUresult_EX_MEM_out, readData2_EX_MEM_out, data);
+        $display("Cache content: ");
+        $display("%d %d \n %d %d \n %d %d \n %d %d \n %d %d \n %d %d \n %d %d \n %d %d \n", c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10,
+                c11, c12, c13, c14, c15);
+        $display("Data memory contet:");
+        $display("m0: %d\tm4: %d", m0, m4);
+        $display("m8: %d\tm12: %d", m8, m12);
+        $display("m16: %d\tm20: %d", m16, m20);
+        $display("m24: %d\tm28: %d", m24, m28);
+        $display("m32: %d\tm36: %d", m32, m36);
         $display("############################### WB ###############################");
         $display("Sign Extender Output = %d ALUresult = %d, select = %b", signExtenderOutputData, ALUresult_MEM_WB_out, memtoReg_MEM_WB_out);
         $display("Write back data = %d", writeBackData);

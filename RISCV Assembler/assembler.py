@@ -257,17 +257,24 @@ addiw x5 x0 42
 halt
 """
 
-branchtesting = """
-addiw x1 x0 5        
-addiw x2 x0 5        
-addiw x3 x0 10          
-addiw x4 x0 15
-beq x1 x2 4
-addiw x5 x0 1
+benchmark6 = """
+addiw x1 x0 32
+addiw x2 x0 -8
+addw x3 x1 x2 
+addw x4 x3 x3 
+sub x5 x4 x3  
+sw x5 -4(x5)  
+lw x6 -4(x3)  
+sw x6 -20(x6) 
+lw x7 8(x6)  
+addw x8 x7 x3 
+addw x8 x4 x3 
+addw x9 x8 x0 
+addw x0 x9 x8 
 halt
 """
 
-machine_code = assemble_riscv(benchmark5)
+machine_code = assemble_riscv(benchmark6)
 memAdd = 0
 for line in machine_code:
     hexString = format(int(line, 2), '08x')

@@ -17,7 +17,7 @@
 `include "DataCache.v"
 `include "instructionCache.v"
 
-module microTestbench;
+module cacheMicroTestbench;
     reg clock;
     reg reset; // reset signal
 
@@ -109,7 +109,7 @@ adder add4Adder(
 
 mux2_1 pcBranchAdderMux(
     .i0(immediate), // immediate value
-    .i1(readData1), // register value (change for forwarding)
+    .i1(branchUnitOperand1), // register value (change for forwarding)
     .select(jalr),
     .out(pcBranchOperand)
 );
@@ -131,6 +131,7 @@ InstructionCache instMem(
 IF_ID bufferIF_ID(
     .clock(clock),
     .reset(reset),
+    .jalr(jalr),
     .PC_in(readAddress),
     .instruction_in(instruction),
     .PC(PC_IF_ID_out),
@@ -389,8 +390,8 @@ mux2_1 memtoRegMux(
     // ####################################################### TESTING #######################################################
 
     initial begin
-        $dumpfile("benchmark3.vcd");
-        $dumpvars(0, microTestbench);
+        $dumpfile("waveform.vcd");
+        $dumpvars(0, cacheMicroTestbench);
     end
     integer cycles = 0;
 

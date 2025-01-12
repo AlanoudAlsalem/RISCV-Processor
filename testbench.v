@@ -1,4 +1,4 @@
-`include "CPU.v"
+`include "CPU.v" // testing phase 1 CPU
 
 module testbench;
     reg clk, reset;

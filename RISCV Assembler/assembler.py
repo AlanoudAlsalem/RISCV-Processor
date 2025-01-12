@@ -274,7 +274,22 @@ addw x0 x9 x8
 halt
 """
 
-machine_code = assemble_riscv(benchmark6)
+testing = """ 
+addiw x1 x0 4
+jalr x2 8(x1)
+addiw x5 x0 1
+halt
+"""
+weirdInstrucitons = """
+addiw x1 x0 4
+lh x3 0(x1)
+addiw x5 x0 36
+sb x1 0(x5)
+lw x10 0(x5)
+halt
+"""
+
+machine_code = assemble_riscv(weirdInstrucitons)
 memAdd = 0
 for line in machine_code:
     hexString = format(int(line, 2), '08x')

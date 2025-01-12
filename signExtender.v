@@ -5,6 +5,6 @@ module signExtender(
     output [31:0] outputData
 );
 
-    assign outputData = (lh) ? {{16{inputData[31]}}, inputData[31:16]} : inputData; 
+    assign outputData = (lh) ? {{16{inputData[15]}}, inputData[15:0]} : inputData; 
 
 endmodule

@@ -276,7 +276,12 @@ halt
 
 testing = """ 
 addiw x1 x0 4
-jalr x2 8(x1)
+addiw x2 x0 10
+addiw x3 x0 9
+beq x1 x2 4
+beq x1 x3 4
+beq x2 x3 4
+beq x1 x2 4
 addiw x5 x0 1
 halt
 """
@@ -289,7 +294,7 @@ lw x10 0(x5)
 halt
 """
 
-machine_code = assemble_riscv(weirdInstrucitons)
+machine_code = assemble_riscv(testing) # add the benchmark of your choice as the argument
 memAdd = 0
 for line in machine_code:
     hexString = format(int(line, 2), '08x')
